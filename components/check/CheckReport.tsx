@@ -75,6 +75,31 @@ export function CheckReport({ state }: { state: CheckState }) {
         </section>
       )}
 
+      {judge && allClaims.length > 0 && (
+        <section className="grid gap-4 sm:grid-cols-2">
+          {([
+            ["✅ What's right", allClaims.filter((c) => c.kind === "strength" && judge.upheld.includes(c.id)), "border-[#1a7f37]"],
+            ["❌ What's wrong", allClaims.filter((c) => c.kind !== "strength" && judge.upheld.includes(c.id)), "border-[var(--danger)]"],
+          ] as const).map(([title, items, border]) => (
+            <div key={title} className={`card border-t-4 p-4 sm:p-5 ${border}`}>
+              <h2 className="font-heading text-[18px]">{title}</h2>
+              {items.length === 0 ? (
+                <p className="mt-2 text-[14px] text-[var(--muted)]">Nothing the Judge upheld here.</p>
+              ) : (
+                <ul className="mt-2 flex flex-col gap-2">
+                  {items.map((c) => (
+                    <li key={c.id} className="text-[14px] leading-snug">
+                      {c.point}
+                      {c.lineIds[0] && lineText.get(c.lineIds[0]) && <span className="mt-1 block text-[12px] text-[var(--muted)]">“{lineText.get(c.lineIds[0])}”</span>}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ))}
+        </section>
+      )}
+
       {judge && judge.topFixes.length > 0 && (
         <Section title="Top 3 changes to make" agent="Judge">
           <ol className="flex flex-col gap-3">

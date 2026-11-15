@@ -40,6 +40,12 @@ export default function CheckPage() {
       .catch(() => undefined);
   useEffect(() => {
     loadPast();
+    // Opened from "Evaluate my resume": start the evaluation right away.
+    if (new URLSearchParams(window.location.search).get("auto") === "1") {
+      window.history.replaceState(null, "", "/check");
+      run();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function run() {
@@ -118,7 +124,9 @@ export default function CheckPage() {
           </p>
         </div>
 
-        <section className="card flex flex-col gap-3 p-4 sm:p-5">
+        <details className="card p-4 sm:p-5" open={Boolean(jobText)}>
+          <summary className="cursor-pointer text-[15px] font-semibold">➕ Compare against a specific job or role (optional)</summary>
+          <div className="mt-3 flex flex-col gap-3">
           <label htmlFor="role" className="text-[14px] font-semibold">
             Target role <span className="font-normal text-[var(--muted)]">(optional, e.g. &ldquo;Software engineering intern&rdquo;)</span>
           </label>
@@ -137,11 +145,15 @@ export default function CheckPage() {
             …or a public job link <span className="font-normal text-[var(--muted)]">(company career pages; LinkedIn and Handshake need pasting)</span>
           </label>
           <input id="url" className="input" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://boards.greenhouse.io/…" />
+          </div>
+        </details>
+
+        <section className="card flex flex-col gap-3 p-4 sm:p-5">
           <div className="flex flex-wrap items-center gap-3">
             <button type="button" onClick={run} disabled={running || (jobText.trim().length > 0 && jobText.trim().length < 200 && !url.trim())} className="btn btn-primary bg-[var(--cardinal-deep)] px-6 disabled:opacity-50">
               {running ? "Agents are working…" : jobText.trim() || url.trim() ? "Evaluate my resume for this job" : "Evaluate my resume"}
             </button>
-            <span className="text-[13px] text-[var(--muted)]">Uses your uploaded resume. Private to you.</span>
+            <span className="text-[13px] text-[var(--muted)]">Uses your uploaded resume. Private to you. <Link href="/dashboard" className="underline">Change resume</Link></span>
           </div>
           {error && (
             <p role="alert" className="text-[14px] text-[var(--danger)]">

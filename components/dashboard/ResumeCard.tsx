@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 interface ResumeInfo {
@@ -21,6 +22,18 @@ export function ResumeCard({
   const [error, setError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const evaluateAfterUpload = useRef(false);
+  const router = useRouter();
+
+  function evaluate() {
+    if (resume) {
+      router.push("/check?auto=1");
+      return;
+    }
+    evaluateAfterUpload.current = true;
+    setError(null);
+    inputRef.current?.click();
+  }
 
   useEffect(() => {
     fetch("/api/resume")
@@ -43,6 +56,7 @@ export function ResumeCard({
       if (!res.ok) return setError(data.error ?? "Upload failed. Try again.");
       setResume(data.resume);
       if (Array.isArray(data.skills) && data.skills.length) onSkillsChange(data.skills);
+      if (evaluateAfterUpload.current) router.push("/check?auto=1");
     } catch {
       setError("Network error, try again.");
     } finally {
@@ -70,8 +84,11 @@ export function ResumeCard({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-heading text-[18px]">Your resume</h2>
         <div className="flex items-center gap-3">
-          <span className="hidden text-[13px] text-[var(--muted)] sm:inline">Private to your account</span>
-          <a href="/resume-builder" className="rounded-full bg-[var(--gold)] px-3.5 py-2 text-[13px] font-bold text-black">✍️ Build my resume</a>
+          <span className="hidden text-[13px] text-[var(--muted)] lg:inline">Private to your account</span>
+          <button type="button" onClick={evaluate} disabled={busy !== null} className="rounded-full bg-[var(--cardinal-deep)] px-4 py-2 text-[14px] font-bold text-white disabled:opacity-60">
+            🔎 Evaluate my resume
+          </button>
+          <a href="/resume-builder" className="rounded-full border border-[var(--border)] bg-white px-4 py-2 text-[14px] font-bold text-black">✍️ Build my resume</a>
         </div>
       </div>
 
@@ -104,7 +121,7 @@ export function ResumeCard({
           ) : (
             <>
               <span className="text-[16px] font-semibold">Upload your resume (PDF)</span>
-              <span className="text-[14px] text-[var(--muted)]">Drop it here or click. AI reads it and scores every job against it.</span>
+              <span className="text-[14px] text-[var(--muted)]">Drop it here or click. Then press Evaluate and five AI agents review it like a recruiter.</span>
             </>
           )}
         </button>
