@@ -22,7 +22,18 @@ Next.js (App Router), Tailwind, Neon Postgres (serverless driver), Gemini (gemin
 ## Run locally
 ```bash
 npm install
-cp .env.local.example .env.local   # fill in DATABASE_URL, SESSION_SECRET, GEMINI_API_KEY, SMTP_*
+./scripts/setup_db.sh      # creates the tables (scripts/schema.sql) and writes .env.local
+./scripts/set_gemini.sh    # Gemini API key for the AI agents
+./scripts/set_mail.sh      # optional: Gmail app password for reset emails
 npm run dev
 ```
+After loading job postings into `jobs`, run `npx tsx --env-file=.env.local scripts/classify_jobs.ts` to tag their domain, level and job type.
+
 Secrets belong only in `.env.local` or in Vercel's environment settings. Never commit them.
+
+## Project layout
+- `app/`: pages and API routes (`api/agent`, `api/resume`, `api/dashboard`, `api/auth`)
+- `components/`: dashboard, resume builder and auth UI
+- `lib/ai/`: Gemini client and the agents (Resume Reader, Analyst, agent tools)
+- `lib/resume/`: resume builder data and the 10 layouts
+- `scripts/`: database schema and setup helpers

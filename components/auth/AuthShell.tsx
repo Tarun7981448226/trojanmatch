@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 import { BrandImage } from "@/components/brand/BrandImage";
 
-// Tarun's split design for /login and /signup: a cardinal brand panel on
+// Split design for /login and /signup: a cardinal brand panel on
 // the left (wordmark, big headline, feature pills) and the form on a white
 // panel on the right. Below 734px the panels stack and the headline shrinks.
 const PILLS = ["Eligibility check", "Fit score 0–100", "AI job agents"];
@@ -27,7 +27,7 @@ export function AuthShell({ title, subtitle, children }: {
   return (
     <div className="grid grid-cols-1 sm:min-h-screen sm:grid-cols-[54fr_46fr]">
       <section className="relative flex flex-col overflow-hidden bg-[var(--cardinal-deep)] px-6 py-8 text-white sm:px-10 sm:py-12 lg:px-14">
-        {/* Tommy Trojan (Tarun's file in public/brand/), desktop only so it
+        {/* Tommy Trojan (file in public/brand/), desktop only so it
             never crowds the headline on smaller screens. */}
         <BrandImage
           src="/brand/tommy-trojan.png"
