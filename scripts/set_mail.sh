@@ -16,4 +16,4 @@ touch .env.local
 grep -v -e '^SMTP_USER=' -e '^SMTP_PASS=' .env.local > .env.local.tmp || true
 printf 'SMTP_USER=%s\nSMTP_PASS=%s\n' "$user" "$pass" >> .env.local.tmp
 mv .env.local.tmp .env.local; chmod 600 .env.local
-echo "Saved. Tell Claude 'mail done'."
+echo "Saved."

@@ -11,4 +11,4 @@ grep -v '^GEMINI_API_KEY=' .env.local > .env.local.tmp || true
 printf 'GEMINI_API_KEY=%s\n' "$key" >> .env.local.tmp
 mv .env.local.tmp .env.local; chmod 600 .env.local
 npx -y vercel@latest env rm GEMINI_API_KEY production --yes >/dev/null 2>&1 || true
-printf '%s' "$key" | npx -y vercel@latest env add GEMINI_API_KEY production >/dev/null 2>&1 && echo "Saved locally and on Vercel. Tell Claude 'gemini done'." || echo "Saved locally; Vercel step failed (tell Claude)."
+printf '%s' "$key" | npx -y vercel@latest env add GEMINI_API_KEY production >/dev/null 2>&1 && echo "Saved locally and on Vercel." || echo "Saved locally; the Vercel step failed."
