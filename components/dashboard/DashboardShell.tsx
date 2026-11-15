@@ -64,6 +64,10 @@ export function DashboardShell() {
             Fight on{firstName ? <>, <span className="text-[var(--gold)]">{firstName}</span></> : ""}.
           </h1>
           <p className="mt-2 text-[16px] text-white/85">Every Trojan deserves the right match.</p>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <a href="/check" className="btn bg-[var(--gold)] px-5 font-bold text-black">🔎 Check a job like a recruiter</a>
+            <a href="/resume-builder" className="btn border border-white/40 px-5 text-white hover:bg-white/10">✍️ Build my resume</a>
+          </div>
         </div>
       </header>
 
