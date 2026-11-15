@@ -64,7 +64,8 @@ export async function readPdf(bytes: Uint8Array): Promise<PdfFacts> {
 
 // Neon returns bytea as a Buffer or a "\x..." hex string depending on driver mode.
 export function byteaToBytes(value: unknown): Uint8Array {
-  if (value instanceof Uint8Array) return value;
+  // pdf.js refuses Node Buffers, so always hand it a plain Uint8Array copy.
+  if (value instanceof Uint8Array) return new Uint8Array(value);
   if (typeof value === "string") return new Uint8Array(Buffer.from(value.replace(/^\\x/, ""), "hex"));
   throw new Error("Unsupported bytea value");
 }

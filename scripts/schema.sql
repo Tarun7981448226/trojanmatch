@@ -99,6 +99,8 @@ create table if not exists tm_checks (
   answers    jsonb,
   tailored   jsonb,
   coach      jsonb,
+  cache_key  text,               -- sha256(resume + job + prompt version)
   created_at timestamptz not null default now()
 );
 create index if not exists tm_checks_user_idx on tm_checks (user_id, created_at desc);
+create index if not exists tm_checks_cache_idx on tm_checks (user_id, cache_key);

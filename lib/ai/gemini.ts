@@ -3,7 +3,7 @@
 // Fast model first; if it's busy or down, fall back to the next one.
 const PRIMARY = process.env.GEMINI_MODEL || "gemini-flash-lite-latest";
 // Busy (429/503) gets one retry on the fast model before falling back.
-const MODELS = [PRIMARY, PRIMARY, "gemini-flash-latest"];
+const MODELS = [PRIMARY, PRIMARY, PRIMARY, "gemini-flash-latest"];
 const URL_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
 
 export type GeminiPart =
@@ -47,7 +47,7 @@ export async function geminiGenerate(body: Record<string, unknown>, timeoutMs = 
       return { role: "model", parts: content.parts };
     }
     lastStatus = res.status;
-    if (res.status === 429 || res.status === 503) await new Promise((r) => setTimeout(r, 1500));
+    if (res.status === 429 || res.status === 503) await new Promise((r) => setTimeout(r, 2000));
     if (res.status !== 429 && res.status < 500 && res.status !== 404) break;
   }
   throw new GeminiError(
