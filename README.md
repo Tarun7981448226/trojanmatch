@@ -4,9 +4,6 @@ Every Trojan deserves the right match. Trojan JobMatch is an AI job and resume h
 
 Live: https://trojanmatch.tarundeepreddy.com
 
-> **Prior-work note:** this is the pre-event prototype, built before the AI@USC
-> Hackathon (Nov 14–15, 2026) on top of my own earlier project. It is shared with the
-> organizers' approval. Work done during the hackathon is added in later commits.
 
 ## What it does
 - **Accounts:** sign up or log in, hashed passwords, password reset by email.
