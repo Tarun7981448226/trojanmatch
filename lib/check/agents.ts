@@ -1,6 +1,7 @@
 import { geminiJSON } from "@/lib/ai/gemini";
 
 import type { DeterministicReport } from "./index";
+import { skillEvidence } from "./skills";
 
 // The AI half of the recruiter check. Four calls: Analyst (gate + fit +
 // requirements), then Recruiter and Advocate in parallel, then the Judge.
@@ -52,6 +53,22 @@ export interface JudgeResult {
   askStudent: string[]; // open questions for the Interviewer
 }
 
+/** The resume line holding this quote: the cited line first, else any line with most of its words. */
+function findQuoteLine(report: DeterministicReport, lineId: string | undefined, quote: string) {
+  const q = norm(quote);
+  const cited = report.lines.find((l) => l.id === lineId);
+  if (cited && norm(cited.text).includes(q)) return cited;
+  const words = q.split(" ").filter((w) => w.length > 2);
+  if (!words.length) return undefined;
+  let best: { line: (typeof report.lines)[number]; share: number } | undefined;
+  for (const line of report.lines) {
+    const t = norm(line.text);
+    const share = words.filter((w) => t.includes(w)).length / words.length;
+    if (share >= 0.7 && (!best || share > best.share)) best = { line, share };
+  }
+  return best?.line;
+}
+
 const clamp = (n: unknown, lo = 0, hi = 100) => Math.max(lo, Math.min(hi, Math.round(Number(n) || 0)));
 const norm = (s: string) => s.toLowerCase().replace(/\s+/g, " ").trim();
 
@@ -74,7 +91,7 @@ export async function runAnalyst(report: DeterministicReport, jobText: string): 
 ${DATA_RULE}
 
 Return JSON:
-{"title": job title, "company": company name or "",
+{"title": job title (for a general evaluation: "General evaluation" plus the role type), "company": company name or "",
  "gate": {"checks": [
    {"name": "graduation", "status": "pass|fail|unclear", "reason": "grad date vs the window the job states"},
    {"name": "degree", ...}, {"name": "seniority", "reason": "e.g. 'new grad' role that asks for 3+ years"}]},
@@ -94,8 +111,6 @@ ${jobText.slice(0, 12000)}
 ${resumeBlock(report)}
 </resume>`);
 
-  const lineText = new Map(report.lines.map((l) => [l.id, l.text]));
-  const lineSection = new Map(report.lines.map((l) => [l.id, l.section]));
   const gateIn = (raw.gate as { checks?: GateCheck[] })?.checks ?? [];
   const checks: GateCheck[] = gateIn
     .filter((c) => ["graduation", "degree", "seniority"].includes(c?.name))
@@ -105,17 +120,17 @@ ${resumeBlock(report)}
     const quote = typeof r.quote === "string" ? r.quote : undefined;
     const requirement = String(r.requirement ?? "").slice(0, 120);
     let status = (["proven", "listed"].includes(String(r.status)) ? r.status : "missing") as Requirement["status"];
-    // Evidence must be real: the cited line exists and contains the quote.
-    const real = Boolean(lineId && quote && lineText.has(lineId) && norm(lineText.get(lineId)!).includes(norm(quote)));
-    if (status !== "missing" && !real) status = "missing";
+    // Evidence must be real: find the resume line that actually holds the quote
+    // (exact, or most of its words, since models paraphrase slightly).
+    const proofLine = quote ? findQuoteLine(report, lineId, quote) : undefined;
+    if (status !== "missing" && !proofLine) status = "missing";
     // "Proven" only counts from an Experience or Projects line; a skills list only "lists" it.
-    const sec = lineId ? lineSection.get(lineId) : undefined;
-    if (status === "proven" && sec !== "experience" && sec !== "projects") status = "listed";
-    let best = { status, lineId: real ? lineId : undefined, quote: real ? quote : undefined };
-    // Code-measured evidence for skills named in this requirement beats the model's reading.
+    if (status === "proven" && proofLine && proofLine.section !== "experience" && proofLine.section !== "projects") status = "listed";
+    let best: Pick<Requirement, "status" | "lineId" | "quote"> = { status, lineId: proofLine?.id, quote: proofLine ? proofLine.text : undefined };
+    // Code-measured evidence for the skills this requirement names beats the model's reading.
     const rank = { missing: 0, listed: 1, proven: 2 } as const;
-    for (const e of report.evidence) {
-      if (!norm(requirement).includes(norm(e.skill)) || rank[e.status] <= rank[best.status]) continue;
+    for (const e of [...report.evidence, ...skillEvidence(requirement, report.lines)]) {
+      if (!norm(requirement).includes(norm(e.skill).split(/[ /]/)[0]) || rank[e.status] <= rank[best.status]) continue;
       best = { status: e.status, lineId: e.lineId, quote: e.quote };
     }
     return { requirement, must: r.must !== false, ...best };

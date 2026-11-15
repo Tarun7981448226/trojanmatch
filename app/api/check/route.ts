@@ -10,7 +10,7 @@ import { JobTextError, jobTextFrom } from "@/lib/check/jobText";
 import { getSql } from "@/lib/db";
 
 export const maxDuration = 60;
-const PROMPT_VERSION = "check-v3";
+const PROMPT_VERSION = "check-v4";
 
 // POST: run a recruiter-style check of the signed-in student's own resume
 // against a pasted job, streaming each stage as one JSON line (NDJSON).
@@ -19,9 +19,14 @@ export async function POST(request: NextRequest) {
   if (!userId) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   const body = await request.json().catch(() => ({}));
 
+  const role = typeof body?.role === "string" ? body.role.trim().slice(0, 80) : "";
   let jobText: string;
   try {
     jobText = await jobTextFrom(body ?? {});
+    // No job post: recruiters still screen against a role, so describe a typical one.
+    if (!jobText) {
+      jobText = `GENERAL RESUME EVALUATION (no specific job post). Evaluate this resume the way a university recruiter screens applicants for ${role ? `"${role}" roles` : "the internship and new-grad roles that best fit the student's degree and experience"}. Use the typical expectations for those roles as the requirements.`;
+    }
   } catch (error) {
     return NextResponse.json({ error: error instanceof JobTextError ? error.message : "Couldn't read that job." }, { status: 400 });
   }

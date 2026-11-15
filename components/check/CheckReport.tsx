@@ -123,7 +123,7 @@ export function CheckReport({ state }: { state: CheckState }) {
           <div className="flex flex-wrap gap-2">
             <Badge {...STUFF[judge?.stuffing ?? det.stuffing.level]} />
             <span className="self-center text-[14px] text-[var(--muted)]">
-              Of the job&rsquo;s skills you mention: {det.stuffing.proven} proven by your work, {det.stuffing.listedOnly} listed with no proof.
+              {det.stuffing.jobSkills > 0 ? <>Of the job&rsquo;s skills you mention: {det.stuffing.proven} proven by your work, {det.stuffing.listedOnly} listed with no proof.</> : <>Paste a job post to check stuffing against a specific job.</>}
             </span>
           </div>
           {det.stuffing.reasons.length > 0 && (
@@ -145,7 +145,7 @@ export function CheckReport({ state }: { state: CheckState }) {
       )}
 
       {analyst && (
-        <Section title="Does your resume prove what the job asks for?" agent="📊 Analyst">
+        <Section title="Does your resume prove what a recruiter looks for?" agent="📊 Analyst">
           <div className="flex flex-col gap-2">
             {analyst.requirements.map((r) => (
               <div key={r.requirement} className="flex flex-col gap-1 border-b border-[var(--border)] pb-2 last:border-0 sm:flex-row sm:items-start sm:justify-between sm:gap-4">

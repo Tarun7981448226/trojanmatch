@@ -8,7 +8,10 @@ export async function jobTextFrom(input: { text?: unknown; url?: unknown }): Pro
   const pasted = typeof input.text === "string" ? input.text.trim() : "";
   if (pasted.length >= 200) return pasted.slice(0, 15000);
   const url = typeof input.url === "string" ? input.url.trim() : "";
-  if (!url) throw new JobTextError("Paste the job description (at least a few lines).");
+  if (!url) {
+    if (pasted.length > 0) throw new JobTextError("That job post is too short. Paste the full description, or leave it empty for a general evaluation.");
+    return ""; // no job: evaluate the resume on its own
+  }
   let host = "";
   try {
     const u = new URL(url);

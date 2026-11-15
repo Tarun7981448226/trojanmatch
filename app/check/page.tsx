@@ -16,9 +16,9 @@ interface PastCheck {
 }
 
 const STEPS: { key: keyof CheckState; agent: string; doing: string }[] = [
-  { key: "deterministic", agent: "📄 Reader + 🧹 ATS check", doing: "Reading your resume and the job, checking the file" },
+  { key: "deterministic", agent: "📄 Reader + 🧹 ATS check", doing: "Reading your resume line by line, checking the file" },
   { key: "reviewer", agent: "🎓 Career Fair Reviewer", doing: "Judging first impression and whether it reads human-made" },
-  { key: "analyst", agent: "📊 Analyst", doing: "Matching every requirement to proof in your resume" },
+  { key: "analyst", agent: "📊 Analyst", doing: "Checking the proof behind every skill a recruiter looks for" },
   { key: "debate", agent: "⚔️ Recruiter vs Advocate", doing: "Arguing for and against an interview" },
   { key: "judge", agent: "⚖️ Judge", doing: "Ruling on the debate and writing the conclusion" },
 ];
@@ -26,6 +26,7 @@ const STEPS: { key: keyof CheckState; agent: string; doing: string }[] = [
 export default function CheckPage() {
   const [jobText, setJobText] = useState("");
   const [url, setUrl] = useState("");
+  const [role, setRole] = useState("");
   const [state, setState] = useState<CheckState>({});
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,7 +51,7 @@ export default function CheckPage() {
       const res = await fetch("/api/check", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: jobText, url }),
+        body: JSON.stringify({ text: jobText, url, role }),
       });
       if (!res.ok || !res.body) {
         const data = await res.json().catch(() => ({}));
@@ -110,31 +111,35 @@ export default function CheckPage() {
       <main className="container-tm flex flex-col gap-5 py-8 sm:py-10">
         <div>
           <h1 className="font-display text-[28px] uppercase leading-none sm:text-[40px]">
-            Check a job <span className="text-[var(--cardinal)]">like a recruiter</span>
+            Evaluate my resume <span className="text-[var(--cardinal)]">like a recruiter</span>
           </h1>
           <p className="mt-2 max-w-[680px] text-[16px] text-[var(--muted)]">
-            Paste any job post. Five AI agents screen your resume the way a recruiter and a career fair advisor would: proof for every skill, keyword stuffing, whether it reads human-made, and exactly what to change.
+            Five AI agents evaluate your resume the way a recruiter and a career fair advisor would: first impression, whether it reads human-made or AI-made, proof behind every skill, keyword stuffing, and exactly what to change. Add a job post (optional) to see how you stack up for that role.
           </p>
         </div>
 
         <section className="card flex flex-col gap-3 p-4 sm:p-5">
+          <label htmlFor="role" className="text-[14px] font-semibold">
+            Target role <span className="font-normal text-[var(--muted)]">(optional, e.g. &ldquo;Software engineering intern&rdquo;)</span>
+          </label>
+          <input id="role" className="input" value={role} onChange={(e) => setRole(e.target.value)} placeholder="Leave empty and the agents pick roles that fit your resume" />
           <label htmlFor="job" className="text-[14px] font-semibold">
-            Job description
+            Job description <span className="font-normal text-[var(--muted)]">(optional)</span>
           </label>
           <textarea
             id="job"
             className="input min-h-[180px] py-3 text-[15px] leading-snug"
             value={jobText}
             onChange={(e) => setJobText(e.target.value)}
-            placeholder="Paste the full job post from Handshake, LinkedIn or a company site…"
+            placeholder="Optional: paste a job post from Handshake, LinkedIn or a company site to also check the fit for that job…"
           />
           <label htmlFor="url" className="text-[14px] font-semibold">
             …or a public job link <span className="font-normal text-[var(--muted)]">(company career pages; LinkedIn and Handshake need pasting)</span>
           </label>
           <input id="url" className="input" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://boards.greenhouse.io/…" />
           <div className="flex flex-wrap items-center gap-3">
-            <button type="button" onClick={run} disabled={running || (jobText.trim().length < 200 && !url.trim())} className="btn btn-primary bg-[var(--cardinal-deep)] px-6 disabled:opacity-50">
-              {running ? "Agents are working…" : "Check my resume against this job"}
+            <button type="button" onClick={run} disabled={running || (jobText.trim().length > 0 && jobText.trim().length < 200 && !url.trim())} className="btn btn-primary bg-[var(--cardinal-deep)] px-6 disabled:opacity-50">
+              {running ? "Agents are working…" : jobText.trim() || url.trim() ? "Evaluate my resume for this job" : "Evaluate my resume"}
             </button>
             <span className="text-[13px] text-[var(--muted)]">Uses your uploaded resume. Private to you.</span>
           </div>
@@ -174,7 +179,7 @@ export default function CheckPage() {
                 <li key={p.id}>
                   <button type="button" onClick={() => open(p.id)} className="flex w-full items-center justify-between gap-3 py-2 text-left text-[14px] hover:text-[var(--cardinal)]">
                     <span className="min-w-0 truncate font-semibold">
-                      {p.title || "Untitled job"}
+                      {p.title || "Resume evaluation"}
                       {p.company ? ` · ${p.company}` : ""}
                     </span>
                     <span className="shrink-0 text-[var(--muted)]">
