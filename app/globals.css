@@ -1,0 +1,173 @@
+@import "tailwindcss";
+
+/* Trojan JobMatch "Cardinal Band": a cardinal header band over a light body,
+   white cards, gold match pills. Flat; no 3D, no video wallpaper.
+   Layout follows Apple.com proportions: 980px content width, breakpoints
+   at 734px and 1068px, 16px mobile gutters, 8px spacing grid, 44px tap
+   targets. Every page is checked at 390px and 1440px wide. */
+:root {
+  --cardinal: #990000;
+  --cardinal-deep: #860000;
+  --gold: #ffcc00;
+  --gold-ink: #3a2a00;
+  --background: #f4f4f2;
+  --foreground: #1d1d1f;
+  --muted: #6e6e73;
+  --card: #ffffff;
+  --border: #e5e5e5;
+  --danger: #b42318;
+  --shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 28px rgba(0, 0, 0, 0.12);
+  --content: 980px;
+  --gutter: 16px;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-cardinal: var(--cardinal);
+  --color-gold: var(--gold);
+  --color-muted: var(--muted);
+  --font-sans: var(--font-inter), -apple-system, "Segoe UI", sans-serif;
+  --breakpoint-sm: 734px;
+  --breakpoint-lg: 1068px;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Centered 980px column with 16px gutters on small screens. */
+.container-tm {
+  width: 100%;
+  max-width: calc(var(--content) + 2 * var(--gutter));
+  /* Only the sides: a "margin: 0 auto" shorthand would beat Tailwind's
+     layered -mt-* utilities and stop cards overlapping the band. */
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 var(--gutter);
+}
+
+/* The cardinal band behind the page header. */
+.band {
+  background: linear-gradient(180deg, var(--cardinal) 0%, var(--cardinal-deep) 100%);
+  color: #fff;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 20px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  transition: background 160ms ease, transform 120ms ease, box-shadow 160ms ease;
+}
+.btn:active {
+  transform: scale(0.98);
+}
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: var(--cardinal);
+  color: #fff;
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--cardinal-deep);
+}
+.btn-secondary {
+  background: #fff;
+  color: var(--foreground);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover:not(:disabled) {
+  box-shadow: var(--shadow);
+}
+.btn-danger {
+  background: #fff;
+  color: var(--danger);
+  border: 1px solid #f1c4c0;
+}
+
+.input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid #8e8e93;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--foreground);
+  font-size: 16px; /* 16px stops iOS Safari zooming into the field */
+  outline: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+.input:focus {
+  border-color: var(--cardinal);
+  box-shadow: 0 0 0 3px rgba(153, 0, 0, 0.15);
+}
+
+.font-display {
+  font-family: var(--font-display), "Arial Black", sans-serif;
+}
+.font-heading {
+  font-family: var(--font-heading), var(--font-sans);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.btn-gold {
+  background: var(--gold);
+  color: #1d1d1f;
+}
+.btn-gold:hover:not(:disabled) {
+  background: #f2bf00;
+}
+
+.pill-gold {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--gold);
+  color: var(--gold-ink);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Resume builder: on screen the full-size page is hidden; when printing
+   (Download PDF) only that page prints, at US Letter with no margins. */
+#resume-print { display: none; }
+@media print {
+  @page { size: letter; margin: 0; }
+  html, body { background: #fff !important; }
+  .no-print { display: none !important; }
+  #resume-print { display: block; }
+  #resume-print .resume-page { min-height: 0 !important; }
+}
