@@ -77,3 +77,28 @@ create table if not exists tm_resume_drafts (
   data       jsonb not null,
   updated_at timestamptz not null default now()
 );
+
+-- Email verification codes for @usc.edu sign-up (hashed, short-lived).
+create table if not exists tm_email_codes (
+  email      text primary key,
+  code_hash  text not null,
+  attempts   integer not null default 0,
+  expires_at timestamptz not null,
+  verified_at timestamptz
+);
+
+-- "Check a job": one row per job a student checks. Private per user.
+create table if not exists tm_checks (
+  id         bigserial primary key,
+  user_id    bigint not null references tm_users(id) on delete cascade,
+  title      text not null default '',
+  company    text not null default '',
+  job_text   text not null,
+  analysis   jsonb,
+  questions  jsonb,
+  answers    jsonb,
+  tailored   jsonb,
+  coach      jsonb,
+  created_at timestamptz not null default now()
+);
+create index if not exists tm_checks_user_idx on tm_checks (user_id, created_at desc);
